@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中華民國運動促進協會 - Ｃ級運動按摩測驗系統</title>
+    <style>
+        /* 馬卡龍配色定義 */
+        :root {
+            --bg-color: #FDF6F5; /* 柔和淺粉底 */
+            --primary: #FFB7B2; /* 蜜桃粉 */
+            --primary-hover: #FFDAC1; /* 淺蜜桃 */
+            --secondary: #E2F0CB; /* 柔和青草綠 */
+            --accent: #B5EAD7; /* 薄荷綠 */
+            --text-main: #5C4A4D; /* 護眼深咖啡色 */
+            --text-light: #8B7E7F;
+            --correct: #A0E8AF; /* 成功粉綠 */
+            --incorrect: #FF9AA2; /* 警告粉紅 */
+            --white: #FFFFFF;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, '微軟正黑體', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            font-size: 1.25rem; /* 整體大字體設計 */
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* 首頁樣式 */
+        #home-screen {
+            text-align: center;
+        }
+
+        .main-title {
+            font-size: 3.2rem;
+            color: #E27D60;
+            margin-bottom: 15px;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        .sub-title {
+            font-size: 2.6rem;
+            color: #85CDCA;
+            margin-bottom: 50px;
+            font-weight: bold;
+        }
+
+        .btn-large {
+            background-color: var(--primary);
+            color: var(--text-main);
+            border: none;
+            padding: 22px 50px;
+            font-size: 2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .btn-large:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.12);
+        }
+
+        /* 測驗區樣式 */
+        #quiz-screen {
+            display: none;
+            background: var(--white);
+            padding: 45px;
+            border-radius: 24px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.04);
+        }
+
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px dashed var(--accent);
+        }
+
+        .timer {
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: #E8A87C;
+            background: #FFF2E6;
+            padding: 6px 18px;
+            border-radius: 12px;
+        }
+
+        .progress {
+            font-size: 1.6rem;
+            color: var(--text-light);
+            font-weight: bold;
+        }
+
+        .question-text {
+            font-size: 1.9rem;
+            font-weight: bold;
+            margin-bottom: 35px;
+            color: #35988A;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .option-btn {
+            background-color: var(--white);
+            border: 3px solid var(--accent);
+            padding: 22px;
+            font-size: 1.55rem;
+            border-radius: 16px;
+            cursor: pointer;
+            text-align: left;
+            color: var(--text-main);
+            transition: all 0.2s ease;
+        }
+
+        .option-btn:hover {
+            background-color: #F0FBF7;
+            border-color: #85CDCA;
+        }
+
+        .option-btn.selected {
+            background-color: var(--accent);
+            color: #1A302B;
+            border-color: #62C2A3;
+            font-weight: bold;
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 45px;
+        }
+
+        .btn-nav {
+            background-color: #C38D9E;
+            color: white;
+            border: none;
+            padding: 16px 35px;
+            font-size: 1.45rem;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-weight: bold;
+        }
+        
+        .btn-nav:hover { background-color: #A27684; }
+        .btn-nav:disabled { background-color: #E0E0E0; cursor: not-allowed; color: #A0A0A0; }
+        
+        .btn-submit { background-color: #E27D60; }
+        .btn-submit:hover { background-color: #C86D53; }
+
+        /* 結果頁樣式 */
+        #result-screen {
+            display: none;
+            background: var(--white);
+            padding: 45px;
+            border-radius: 24px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.04);
+        }
+
+        .score-display {
+            text-align: center;
+            font-size: 4.5rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .pass-status {
+            text-align: center;
+            font-size: 2.1rem;
+            font-weight: bold;
+            margin-bottom: 40px;
+            padding: 12px;
+            border-radius: 12px;
+        }
+
+        .status-pass { color: #1E6B3F; background-color: var(--correct); }
+        .status-fail { color: #8B1A1A; background-color: var(--incorrect); }
+
+        .review-box {
+            background: var(--bg-color);
+            padding: 25px;
+            border-radius: 18px;
+            margin-bottom: 25px;
+            border-left: 8px solid var(--accent);
+        }
+
+        .review-box.wrong {
+            border-left-color: var(--incorrect);
+        }
+
+        .review-question {
+            font-size: 1.6rem;
+            font-weight: bold;
+            margin-bottom: 12px;
+            color: #333;
+        }
+
+        .review-answer {
+            font-size: 1.4rem;
+            margin-bottom: 6px;
+        }
+
+        .review-explanation {
+            font-size: 1.3rem;
+            color: #554477;
+            background: #EAE4F2;
+            padding: 16px;
+            border-radius: 12px;
+            margin-top: 12px;
+            border-left: 4px solid #926AA6;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="home-screen">
+        <div class="main-title">中華民國運動促進協會</div>
+        <div class="sub-title">Ｃ級運動按摩</div>
+        <button class="btn-large" onclick="startQuiz()">開始測驗 (隨機10題)</button>
+    </div>
+
+    <div id="quiz-screen">
+        <div class="header-bar">
+            <div class="progress">進度：<span id="current-q-num">1</span> / 10 題</div>
+            <div class="timer">計時：<span id="time-display">00:00</span></div>
+        </div>
+        
+        <div class="question-text" id="question-text">題目載入中...</div>
+        
+        <div class="options-container" id="options-container">
+            </div>
+
+        <div class="nav-buttons">
+            <button class="btn-nav" id="btn-prev" onclick="prevQuestion()">上一頁</button>
+            <button class="btn-nav" id="btn-next" onclick="nextQuestion()">下一頁</button>
+            <button class="btn-nav btn-submit" id="btn-submit" style="display:none;" onclick="submitQuiz()">繳交試卷</button>
+        </div>
+    </div>
+
+    <div id="result-screen">
+        <div class="score-display" id="score-display">0 分</div>
+        <div class="pass-status" id="pass-status">狀態</div>
+        
+        <div style="text-align: center; margin-bottom: 35px;">
+            <button class="btn-nav" style="background-color: #41B3A3;" onclick="location.reload()">再測驗一次</button>
+        </div>
+
+        <h2 style="color: #35988A; font-size: 2.2rem; border-bottom: 3px solid #35988A; padding-bottom: 10px; margin-bottom: 25px;">測驗題詳解</h2>
+        <div id="review-container">
+            </div>
+    </div>
+</div>
+
+<script>
+    // 總共 50 題完整不重複題庫
+    const questionBank = [
+        {
+            question: "關於「肌筋膜」的功能，下列何者『非』簡報提及的三大核心功能？",
+            options: ["結構支撐 (Structural Support)", "力量傳導 (Force Transmission)", "感覺通訊 (Sensory Communication)", "主動造血 (Hemopoiesis)"],
+            answer: "主動造血 (Hemopoiesis)",
+            explanation: "肌筋膜三大科學功能為：1.結構支撐（維持形狀姿勢） 2.力量傳導（傳遞力量至動作鏈） 3.感覺通訊（富含神經末梢）。造血非其功能。"
+        },
+        {
+            question: "肌肉組織中，如同「緊身衣」般包覆著「整塊肌肉」的最外層網絡稱為什麼？",
+            options: ["肌外膜 (Epimysium)", "肌束膜 (Perimysium)", "肌內膜 (Endomysium)", "深筋膜 (Deep Fascia)"],
+            answer: "肌外膜 (Epimysium)",
+            explanation: "講義指出，肌外膜 (Epimysium) 負責包覆整塊肌肉，想像它如同緊身衣，為身體提供結構支撐功能。"
+        },
+        {
+            question: "當我們「單側」胸鎖乳突肌 (SCM) 收縮時，會產生什麼樣的頭部旋轉動作？",
+            options: ["同側旋轉（向同側看）", "對側旋轉（頭轉向另一側）", "後仰伸展", "完全無法轉動"],
+            answer: "對側旋轉（頭轉向另一側）",
+            explanation: "胸鎖乳突肌單側收縮時會帶動「對側旋轉」。例如：右邊 SCM 收縮，頭會轉向左邊。"
+        },
+        {
+            question: "胸大肌的「鎖骨頭 (Clavicular head)」（上部纖維）主要負責肩關節的哪一個分區動作？",
+            options: ["肩關節屈曲 (Flexion)", "肩關節伸展 (Extension)", "肩關節下壓 (Depression)", "肩關節外旋 (External Rotation)"],
+            answer: "肩關節屈曲 (Flexion)",
+            explanation: "胸大肌整體動作為內收與內旋。分區動作中，鎖骨頭（上部）負責肩關節屈曲(Flexion)。"
+        },
+        {
+            question: "關於「肱二頭肌」的功能，除了肘關節屈曲外，它還具備前臂的何種強力動作？",
+            options: ["前臂旋前 (Pronation)", "前臂旋後 (Supination)", "腕屈曲 (Wrist Flexion)", "手腕外翻"],
+            answer: "前臂旋後 (Supination)",
+            explanation: "肱二頭肌（Biceps brachii）跨越關節，主要動作包含肘關節屈曲、前臂旋後(Supination)以及輔助肩關節屈曲。"
+        },
+        {
+            question: "下列哪一條肌肉的「長頭」附著於肩胛骨的「孟下結節」，並具備肩關節伸展與內收功能？",
+            options: ["肱二頭肌", "肱三頭肌", "胸小肌", "腰方肌"],
+            answer: "肱三頭肌",
+            explanation: "肱三頭肌（Triceps brachii）的「長頭」起點在肩胛骨孟下結節，其功能是肘關節伸直、肩關節伸展與內收。"
+        },
+        {
+            question: "「股四頭肌」群中，唯一一條跨越雙關節（髖關節與膝關節），兼具「髖關節屈曲」功能的肌肉是？",
+            options: ["股內側肌", "股外側肌", "股中間肌", "股直肌"],
+            answer: "股直肌",
+            explanation: "股直肌（Rectus femoris）起點在髂前下棘與髖臼上緣，是股四頭肌中唯一跨越髖關節的肌肉，因此具備髖屈曲功能。"
+        },
+        {
+            question: "大腿外側的「髂脛束 (IT Band)」本身不是肌肉、無法主動收縮，它的張力主要來自於連接它的哪兩塊肌肉？",
+            options: ["闊筋膜張肌 (TFL) 與 臀大肌", "股直肌 與 股外側肌", "臀中肌 與 縫匠肌", "大腿後肌 與 股薄肌"],
+            answer: "闊筋膜張肌 (TFL) 與 臀大肌",
+            explanation: "髂脛束（Iliotibial band）的張力來自於前方連接的闊筋膜張肌（TFL）與後方連接的臀大肌。"
+        },
+        {
+            question: "「臀大肌 (Gluteus Maximus)」在進行動作時，除了主要的髖關節伸展外，還包含何種旋轉功能？",
+            options: ["髖關節外旋 (External Rotation)", "髖關節內旋 (Internal Rotation)", "軀幹屈曲 (Flexion)", "膝關節屈曲"],
+            answer: "髖關節外旋 (External Rotation)",
+            explanation: "臀大肌的主要動作為髖關節伸展、髖關節外旋、穩定膝蓋（拉緊髂脛束），以及在足部固定時做出軀幹伸展。"
+        },
+        {
+            question: "「腰方肌 (QL)」收縮時，能產生將骨盆上提的動作，這在解剖手法技巧中被稱為什麼？",
+            options: ["提髖動作 (Hip Hiking)", "骨盆前傾 (Anterior Tilt)", "髖關節外展 (Abduction)", "烏龜頸代償"],
+            answer: "提髖動作 (Hip Hiking)",
+            explanation: "腰方肌（Quadratus lumborum）具備腰椎側彎、腰椎伸展功能，並能上提骨盆，即稱為提髖動作(Hip Hiking)。"
+        },
+        {
+            question: "小腿後側的「腓腸肌 (Gastrocnemius)」因為起點在膝蓋之上，故能同時做出哪兩個關節的屈曲動作？",
+            options: ["膝關節伸直 與 足蹠屈", "膝關節屈曲 與 足背屈", "膝關節屈曲 與 足蹠屈", "踝關節屈曲 與 趾關節伸展"],
+            answer: "膝關節屈曲 與 足蹠屈",
+            explanation: "腓腸肌跨越膝關節與踝關節，其功能為足部蹠屈（向下踩）以及膝關節屈曲（彎膝蓋）。"
+        },
+        {
+            question: "現代人常見的「烏龜頸代償機制」，若下頸椎固定或過度彎曲，哪條肌肉收縮反而會造成下巴前凸？",
+            options: ["胸大肌", "胸小肌", "胸鎖乳突肌", "斜方肌"],
+            answer: "胸鎖乳突肌",
+            explanation: "講義特別提到胸鎖乳突肌（SCM）的烏龜頸機制：如果下頸椎固定或過度彎曲，SCM的收縮反而會造成下巴前凸。"
+        },
+        {
+            question: "科學化運動按摩技術中，施加「按摩壓力」作用於肌筋膜網絡，主要目的是促進什麼生理循環？",
+            options: ["增加乳酸無氧堆積", "帶來氧氣與營養、帶走代謝廢物", "阻斷大腦神經通訊", "破壞骨骼架構連續性"],
+            answer: "帶來氧氣與營養、帶走代謝廢物",
+            explanation: "講義中的生理圖示說明，按摩壓力作用於肌筋膜，可精準放鬆，促進帶來氧氣與營養、並加速代謝廢物的排出。"
+        },
+        {
+            question: "「胸小肌 (Pectoralis Minor)」的終點（Insertion）附著於肩胛骨的哪一個特定突起構造？",
+            options: ["喙突", "肩峰", "孟上結節", "肩胛岡"],
+            answer: "喙突",
+            explanation: "胸小肌的起點在第3至第5肋骨前表面，終點（Insertion）則精準附著在肩胛骨的喙突。"
+        },
+        {
+            question: "本課程與證照是由哪一個單位主辦與發證？",
+            options: ["中華民國運動促進協會 (SPAT)", "國家肌力體能協會 (NSCA)", "美國國家運動醫學學會 (NASM)", "台北市物理治療師公會"],
+            answer: "中華民國運動促進協會 (SPAT)",
+            explanation: "簡報首頁與尾頁明確標示，主辦與發證單位為「中華民國運動促進協會 (Sports Promotion Association of Taiwan, SPAT)」。"
+        },
+        {
+            question: "負責包覆「肌肉纖維束（Muscular fascicles）」的肌筋膜網絡結構稱為什麼？",
+            options: ["肌外膜", "肌束膜", "肌內膜", "骨外膜"],
+            answer: "肌束膜",
+            explanation: "肌筋膜緻密網絡層次：最外層包覆整塊肌肉是肌外膜，中間包覆肌束的是肌束膜 (Perimysium)，最內層包覆單一肌纖維的是肌內膜。"
+        },
+        {
+            question: "包覆在「單一肌肉細胞/肌纖維（Muscle Fiber）」最內層的細微筋膜結構是？",
+            options: ["肌束膜", "肌外膜", "肌內膜", "聯合腱"],
+            answer: "肌內膜",
+            explanation: "最內層、直接包覆微觀單一肌纖維的筋膜網絡結構為「肌內膜 (Endomysium)」。"
+        },
+        {
+            question: "肌筋膜富含神經末梢，被視為人體最大的哪一種器官？",
+            options: ["運動器官", "感覺器官", "消化器官", "免疫器官"],
+            answer: "感覺器官",
+            explanation: "肌筋膜富含神經末梢，是身體最大的「感覺器官」，負責向大腦回報位置、壓力和張力等本體感覺資訊。"
+        },
+        {
+            question: "講義提及「全局觀點」，頭皮筋膜、豎脊肌群、大腿後肌群、足底筋膜彼此緊密關聯，這代表什麼重要意義？",
+            options: ["局部肌肉比筋膜線重要", "筋膜網絡能提供相較局部肌肉更寬廣的視野", "這些部位無法透過運動按摩放鬆", "肌肉之間互不影響"],
+            answer: "筋膜網絡能提供相較局部肌肉更寬廣的視野",
+            explanation: "簡報指出「筋膜網絡彼此緊密關聯，相較局部肌肉能提供更寬廣的視野」，這便是科學化肌筋膜技術的全局觀點。"
+        },
+        {
+            question: "下列何者是胸大肌「整體（所有纖維共同）」皆具備的主要關節動作功能？",
+            options: ["肩關節內收 與 內旋", "肩關節外展 與 外旋", "肩關節屈曲 與 水平外展", "肩胛骨後縮 與 下轉"],
+            answer: "肩關節內收 與 內旋",
+            explanation: "胸大肌整體（Overall）的共同動作為肩關節內收(Adduction)與內旋(Medial Rotation)。"
+        },
+        {
+            question: "胸大肌的「胸肋頭 (Sternocostal head)」（中部纖維）最主要負責下列哪一個動作？",
+            options: ["垂直伸展", "水平內收", "肩胛骨骨盆上提", "頸部屈曲"],
+            answer: "水平內收",
+            explanation: "講義表格載明，胸大肌胸肋頭（中部）的分區動作為「水平內收 (Horizontal Adduction)」。"
+        },
+        {
+            question: "胸大肌的「腹部頭 (Abdominal head)」（下部纖維）主要負責哪一個分區動作？",
+            options: ["肩關節屈曲 與 上提", "肩關節伸展 與 下壓", "前臂旋後", "腰椎側彎"],
+            answer: "肩關節伸展 與 下壓",
+            explanation: "胸大肌的下部（腹部頭）分區動作是肩關節伸展（Extension）與下壓（Depression）。"
+        },
+        {
+            question: "胸大肌所有纖維匯聚後的終點（Insertion）附著於肱骨的哪一個解剖解構？",
+            options: ["大結節", "小結節", "結節間溝外側唇", "三角肌粗隆"],
+            answer: "結節間溝外側唇",
+            explanation: "胸大肌的終點（Insertion）為肱骨的結節間溝外側唇。"
+        },
+        {
+            question: "胸小肌（Pectoralis Minor）的主要功能不包含下列何者？",
+            options: ["肩胛骨前突 (Protraction)", "肩胛骨下壓 (Depression)", "肩胛骨下轉 (Downward Rotation)", "肩胛骨後縮 (Retraction)"],
+            answer: "肩胛骨後縮 (Retraction)",
+            explanation: "胸小肌位於胸部深層，其功能為肩胛骨前突、下壓、下轉以及輔助呼吸，並「不」包含後縮（後縮是背部肌肉功能）。"
+        },
+        {
+            question: "當人體用力吸氣時，胸小肌可以扮演什麼樣的輔助角色？",
+            options: ["協助下壓骨盆", "輔助呼吸，協助上提肋骨", "固定腳踝", "放鬆頸椎"],
+            answer: "輔助呼吸，協助上提肋骨",
+            explanation: "講義指出胸小肌在「輔助呼吸」時，可以協助固定或上提第3至第5肋骨的前表面。"
+        },
+        {
+            question: "胸鎖乳突肌（SCM）的「鎖骨頭」附著於鎖骨的哪一個特定表面？",
+            options: ["鎖骨外側 1/3 的下表面", "鎖骨內側 1/3 的上表面", "整個鎖骨的前表面", "鎖骨肩峰端"],
+            answer: "鎖骨內側 1/3 的上表面",
+            explanation: "胸鎖乳突肌的鎖骨頭起點為「鎖骨內側 1/3 的上表面」；胸骨頭起點則是「胸骨柄的前表面」。"
+        },
+        {
+            question: "「雙側」胸鎖乳突肌（SCM）同時收縮時，主要會帶動頭頸部做出什麼動作？",
+            options: ["頸部屈曲（點頭、下巴靠向胸口）", "頸部完全後仰伸展", "頭部向右對側旋轉", "提髖動作"],
+            answer: "頸部屈曲（點頭、下巴靠向胸口）",
+            explanation: "當左右兩側的 SCM 同時收縮（雙側收縮），主要動作是頸部屈曲（點頭、下巴靠向胸口），並可在用力吸氣時協助上提鎖骨與胸骨。"
+        },
+        {
+            question: "胸鎖乳突肌（SCM）的終點（Insertion）除了顳骨的乳突外，還附著於枕骨的哪裡？",
+            options: ["枕骨大孔", "上項線外側", "下項線內側", "枕外隆凸"],
+            answer: "上項線外側",
+            explanation: "講義載明 SCM 的終點（Insertion）為：顳骨的乳突、以及枕骨的上項線外側。"
+        },
+        {
+            question: "肱二頭肌（Biceps brachii）的「長頭」起點，位於肩胛骨的哪一個解剖位置？",
+            options: ["孟上結節", "孟下結節", "喙突", "肩胛下窩"],
+            answer: "孟上結節",
+            explanation: "肱二頭肌長頭起點在肩胛骨的「孟上結節」；短頭起點則在「喙突」。"
+        },
+        {
+            question: "肱二頭肌的「短頭」起點，與下列哪一條肌肉的終點皆位於肩胛骨的「喙突」？",
+            options: ["胸大肌", "胸小肌", "肱三頭肌", "腰方肌"],
+            answer: "胸小肌",
+            explanation: "肩胛骨的「喙突」是許多肌肉的交通要道：肱二頭肌短頭以此為「起點」，而胸小肌以此為「終點」。"
+        },
+        {
+            question: "肱二頭肌群所有纖維向下延伸後，最終的終點（Insertion）附著於前臂的何處？",
+            options: ["尺骨鷹嘴突", "橈骨近端的橈骨粗隆", "手腕舟狀骨", "肱骨內上髁"],
+            answer: "橈骨近端的橈骨粗隆",
+            explanation: "肱二頭肌的終點附著在橈骨近端的「橈骨粗隆 (Radial tuberosity)」，因此能有效帶動前臂旋後與肘屈曲。"
+        },
+        {
+            question: "肱三頭肌群（Triceps brachii）中，哪一個頭跨越了肩關節，因而具備肩關節伸展與內收功能？",
+            options: ["長頭 (Long Head)", "外側頭 (Lateral Head)", "內側頭 (Medial Head)", "短頭 (Short Head)"],
+            answer: "長頭 (Long Head)",
+            explanation: "肱三頭肌的「長頭」起點在肩胛骨孟下結節（跨越肩關節）；外側頭與內側頭起點都在肱骨後表面（未跨肩關節）。"
+        },
+        {
+            question: "肱三頭肌的「外側頭」與「內側頭」在肱骨後表面的起點分界，主要以哪一個神經通道構造作區分？",
+            options: ["尺神經溝", "橈神經溝", "正中神經管", "腕隧道"],
+            answer: "橈神經溝",
+            explanation: "講義標示：外側頭在橈神經溝上方，內側頭在橈神經溝下方。"
+        },
+        {
+            question: "肱三頭肌（長頭、外側頭、內側頭）三者匯聚後，最終共同的終點（Insertion）位於尺骨的何處？",
+            options: ["冠狀突", "橈骨粗隆", "鷹嘴突", "尺骨莖突"],
+            answer: "鷹嘴突",
+            explanation: "肱三頭肌共同附著於尺骨後側最強大的突起——「鷹嘴突 (Olecranon process)」，主要負責肘關節伸直。"
+        },
+        {
+            question: "股四頭肌群共同的終點（Insertion），是經由股四頭肌腱與髕韌帶，最終附著在脛骨的哪裡？",
+            options: ["內側髁", "外側髁", "脛骨粗隆", "內踝"],
+            answer: "脛骨粗隆",
+            explanation: "股四頭肌的共同終點結構路徑為：股四頭肌腱 -> 髕韌帶 -> 最終附著在「脛骨粗隆 (Tibial tuberosity)」。"
+        },
+        {
+            question: "在股四頭肌群中，哪一條肌肉特別強調具備「穩定髕骨、防止髕骨向外滑脫」的重要功能？",
+            options: ["股直肌", "股外側肌", "股內側斜肌", "股中間肌"],
+            answer: "股內側斜肌",
+            explanation: "講義特別註明，穩定髕骨、防止髕骨向外滑脫，是以股內側斜肌 (VMO) 為主。"
+        },
+        {
+            question: "股四頭肌的「股外側肌」，其解剖起點（Origin）主要位於股骨的哪些位置？",
+            options: ["髂前下棘", "股骨大轉子及粗線外側唇", "股骨粗線內側唇", "股骨幹的前面"],
+            answer: "股骨大轉子及粗線外側唇",
+            explanation: "股外側肌起點為「股骨大轉子及粗線外側唇」；股內側肌起點則是「股骨粗線內側唇」。"
+        },
+        {
+            question: "位於大腿深層、被股直肌覆蓋在下方的股四頭肌成員是哪一條？",
+            options: ["股內側肌", "股外側肌", "股中間肌", "縫匠肌"],
+            answer: "股中間肌",
+            explanation: "股中間肌位於股骨幹的前面及外側面，屬於大腿深層，上方被股直肌所覆蓋。"
+        },
+        {
+            question: "講義大腿解剖圖示中，當腹部肌肉活化不足（Reduced activation）時，進行屈髖動作（Flexion effort）會導致骨盆產生何種非預期代償？",
+            options: ["骨盆後傾", "骨盆前傾", "骨盆提髖", "骨盆水平旋轉"],
+            answer: "骨盆前傾",
+            explanation: "講義第16頁機制圖示顯示，當腹肌活化不足，無法穩定核心時，屈髖（股直肌/腰肌拉扯）會連帶造成骨盆「前傾 (Anterior tilt)」。"
+        },
+        {
+            question: "關於大腿外側的「髂脛束 (Iliotibial band)」，下列敘述何者『錯誤』？",
+            options: ["它是一條強健的筋膜束，不是肌肉", "它能主動收縮產生動態力量", "它跨過膝蓋外側，附著在脛骨外側髁特定突起", "在站立時能鎖定膝關節以維持伸直"],
+            answer: "它能主動收縮產生動態力量",
+            explanation: "【特別注意】髂脛束不是肌肉，無法主動收縮！它的張力完全來自於前方的闊筋膜張肌與後方的臀大肌。"
+        },
+        {
+            question: "當我們單腳著地或站立時，髂脛束主要透過鎖定膝關節來維持何種狀態？",
+            options: ["膝關節維持伸直（穩定膝蓋）", "膝關節大幅屈曲", "小腿內旋", "足部背屈"],
+            answer: "膝關節維持伸直（穩定膝蓋）",
+            explanation: "髂脛束（IT Band）的核心功能之一就是在單腳著地或站立時，鎖定膝關節維持伸直，扮演被動穩定的結構角色。"
+        },
+        {
+            question: "臀大肌（Gluteus Maximus）的纖維中，大約有多少比例的「上部與淺層纖維」是連接到「髂脛束」的？",
+            options: ["大約 1/4", "大約 Half (一半)", "大約 3/4", "全部 100%"],
+            answer: "大約 3/4",
+            explanation: "講義表格載明，臀大肌的上部與淺層纖維（約佔 3/4）連接到髂脛束；而下部與深層纖維（約佔 1/4）連接到股骨後側的臀肌粗隆。"
+        },
+        {
+            question: "當我們腳部固定在地面時，臀大肌收縮可以將骨盆向後拉，這在日常生活中能協助我們做出什麼動作？",
+            options: ["將彎腰的身體挺直（軀幹伸展）", "大幅度彎腰（軀幹屈曲）", "大腿內收", "腳踝蹠屈"],
+            answer: "將彎腰的身體挺直（軀幹伸展）",
+            explanation: "當腳固定時，臀大肌能將骨盆向後拉，協助將彎腰的身體挺直（即軀幹伸展動作）。"
+        },
+        {
+            question: "臀大肌少數的「下部與深層纖維（約佔 1/4）」，最終是連接到股骨後側的哪一個解剖構造？",
+            options: ["大轉子", "小轉子", "臀肌粗隆", "內側髁"],
+            answer: "臀肌粗隆",
+            explanation: "臀大肌深層下部纖維（1/4）的終點附著在股骨後側的「臀肌粗隆 (Gluteal tuberosity)」。"
+        },
+        {
+            question: "腰方肌（Quadratus Lumborum）的起點位於骨盆後側上緣，主要包含髂脊後側內唇以及哪一條韌帶？",
+            options: ["髂腰韌帶", "薦結節韌帶", "髕韌帶", "黃韌帶"],
+            answer: "髂腰韌帶",
+            explanation: "講義表格寫道，腰方肌（QL）的起點為「髂脊後側內唇、髂腰韌帶（骨盆後側的上緣）」。"
+        },
+        {
+            question: "腰方肌向上延伸附著，其終點包含哪些骨骼構造？",
+            options: ["第12肋骨下緣、L1-L4 橫突", "第3至第5肋骨、胸骨柄", "髂前下棘、脛骨粗隆", "薦骨背面、尾骨"],
+            answer: "第12肋骨下緣、L1-L4 橫突",
+            explanation: "腰方肌的終點（Insertion）為「第12肋骨下緣、L1-L4椎體的橫突」。"
+        },
+        {
+            question: "當我們兩側的腰方肌在呼吸時收縮，它能扮演什麼固定結構的功能？",
+            options: ["上提胸骨", "穩定第12肋（在用力呼吸時固定肋骨）", "使骨盆前傾", "鎖定膝關節"],
+            answer: "穩定第12肋（在用力呼吸時固定肋骨）",
+            explanation: "腰方肌的功能除了讓腰椎側彎與伸展、骨盆上提之外，還能在用力呼吸時固定並穩定第12肋骨。"
+        },
+        {
+            question: "腓腸肌（Gastrocnemius）的內側頭與外側頭，解剖起點分別位於股骨的何處？",
+            options: ["內側髁 與 外側髁", "大轉子 與 小轉子", "臀肌粗隆", "粗線外側唇"],
+            answer: "內側髁 與 外側髁",
+            explanation: "腓腸肌內側頭起點在股骨內側髁，外側頭在股骨外側髁，這也是它跨越膝關節的原因。"
+        },
+        {
+            question: "腓腸肌群向下延伸，與人體最強壯的哪一條肌腱（跟腱）融合並附著在跟骨後表面？",
+            options: ["股四頭肌腱", "阿基里斯腱", "髂脛束", "胸大肌腱"],
+            answer: "阿基里斯腱",
+            explanation: "腓腸肌的終點為「阿基里斯腱 (Achilles tendon)」，最終附著在跟骨（Calcaneus）的後表面。"
+        },
+        {
+            question: "講義第三章提及，在評估動作功能障礙時，進行「髖伸直測試」主要是在檢測與觀察哪兩個部位的伸直連動關係？",
+            options: ["腰椎伸直 與 髖關節伸直", "頸部屈曲 與 肩關節內收", "足蹠屈 與 膝關節伸直", "肘關節伸直 與 手腕旋後"],
+            answer: "腰椎伸直 與 髖關節伸直",
+            explanation: "依據第21頁「動作功能障礙：髖伸直測試」圖示，該測試主要涉及與評估「腰椎伸直 (Lumbar Extension)」與「髖關節伸直 (Hip Extension)」之間的動力鏈代償關係。"
+        }
+    ];
+
+    let currentQuiz = [];
+    let currentQuestionIndex = 0;
+    let userAnswers = [];
+    let timerInterval;
+    let secondsElapsed = 0;
+
+    // 洗牌函數
+    function shuffleArray(array) {
+        let shuffled = [...array];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled;
+    }
+
+    // 格式化時間
+    function formatTime(sec) {
+        let m = Math.floor(sec / 60).toString().padStart(2, '0');
+        let s = (sec % 60).toString().padStart(2, '0');
+        return `${m}:${s}`;
+    }
+
+    // 開始測驗（每次從50題庫中隨機不重複抽出10題）
+    function startQuiz() {
+        document.getElementById('home-screen').style.display = 'none';
+        document.getElementById('quiz-screen').style.display = 'block';
+        
+        // 1. 先將50大題庫打亂順序
+        let shuffledBank = shuffleArray(questionBank);
+        
+        // 2. 切出前10題（保證10題彼此不重複）
+        let selectedQuestions = shuffledBank.slice(0, 10);
+        
+        // 3. 將這10題的「選項」也分別各自打亂
+        currentQuiz = selectedQuestions.map(q => {
+            return {
+                ...q,
+                options: shuffleArray(q.options)
+            };
+        });
+
+        currentQuestionIndex = 0;
+        userAnswers = new Array(10).fill(null);
+        secondsElapsed = 0;
+        document.getElementById('time-display').innerText = "00:00";
+        
+        // 啟動計時器
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            secondsElapsed++;
+            document.getElementById('time-display').innerText = formatTime(secondsElapsed);
+        }, 1000);
+
+        renderQuestion();
+    }
+
+    // 渲染當前頁面題目
+    function renderQuestion() {
+        const q = currentQuiz[currentQuestionIndex];
+        document.getElementById('current-q-num').innerText = currentQuestionIndex + 1;
+        document.getElementById('question-text').innerText = `${currentQuestionIndex + 1}. ${q.question}`;
+        
+        const optionsContainer = document.getElementById('options-container');
+        optionsContainer.innerHTML = '';
+
+        q.options.forEach((opt) => {
+            const btn = document.createElement('button');
+            btn.className = `option-btn ${userAnswers[currentQuestionIndex] === opt ? 'selected' : ''}`;
+            btn.innerText = opt;
+            btn.onclick = () => selectOption(opt);
+            optionsContainer.appendChild(btn);
+        });
+
+        // 導航上下頁按鈕顯示邏輯
+        document.getElementById('btn-prev').disabled = (currentQuestionIndex === 0);
+        
+        if (currentQuestionIndex === currentQuiz.length - 1) {
+            document.getElementById('btn-next').style.display = 'none';
+            document.getElementById('btn-submit').style.display = 'block';
+        } else {
+            document.getElementById('btn-next').style.display = 'block';
+            document.getElementById('btn-submit').style.display = 'none';
+        }
+    }
+
+    // 點擊選擇答案
+    function selectOption(selectedOpt) {
+        userAnswers[currentQuestionIndex] = selectedOpt;
+        renderQuestion();
+    }
+
+    // 上一頁
+    function prevQuestion() {
+        if (currentQuestionIndex > 0) {
+            currentQuestionIndex--;
+            renderQuestion();
+        }
+    }
+
+    // 下一頁
+    function nextQuestion() {
+        if (currentQuestionIndex < currentQuiz.length - 1) {
+            currentQuestionIndex++;
+            renderQuestion();
+        }
+    }
+
+    // 繳交計算成績
+    function submitQuiz() {
+        // 未完成防呆提示
+        if (userAnswers.includes(null)) {
+            if(!confirm("考卷中還有未作答的題目，確定要現在繳交嗎？")) return;
+        }
+
+        clearInterval(timerInterval);
+        
+        let score = 0;
+        currentQuiz.forEach((q, index) => {
+            if (userAnswers[index] === q.answer) {
+                score += 10; // 共10題，每題10分
+            }
+        });
+
+        document.getElementById('quiz-screen').style.display = 'none';
+        document.getElementById('result-screen').style.display = 'block';
+        
+        const scoreDisplay = document.getElementById('score-display');
+        const passStatus = document.getElementById('pass-status');
+        
+        scoreDisplay.innerText = `${score} 分`;
+        
+        // 及格標準 80 分
+        if (score >= 80) {
+            passStatus.innerText = `🎉 恭喜及格！(達到80分標準) ⏱️ 總測驗時間：${formatTime(secondsElapsed)}`;
+            passStatus.className = "pass-status status-pass";
+        } else {
+            passStatus.innerText = `❌ 未達80分及格標準，請再接再厲！ ⏱️ 總測驗時間：${formatTime(secondsElapsed)}`;
+            passStatus.className = "pass-status status-fail";
+        }
+
+        generateReview();
+    }
+
+    // 生成結果詳細分析與講義詳解
+    function generateReview() {
+        const reviewContainer = document.getElementById('review-container');
+        reviewContainer.innerHTML = '';
+
+        currentQuiz.forEach((q, index) => {
+            const userAnswer = userAnswers[index] || "未作答";
+            const isCorrect = (userAnswer === q.answer);
+            
+            const reviewBox = document.createElement('div');
+            reviewBox.className = `review-box ${isCorrect ? '' : 'wrong'}`;
+            
+            reviewBox.innerHTML = `
+                <div class="review-question">第 ${index + 1} 題: ${q.question}</div>
+                <div class="review-answer" style="color: ${isCorrect ? '#1E6B3F' : '#8B1A1A'}; font-weight: bold;">
+                    您的回答：${userAnswer} ${isCorrect ? '（正確） ✔️' : '（錯誤） ❌'}
+                </div>
+                ${!isCorrect ? `<div class="review-answer" style="color: #1E6B3F; font-weight: bold;">正確答案：${q.answer}</div>` : ''}
+                <div class="review-explanation">
+                    <strong>💡 講義知識點：</strong><br>
+                    ${q.explanation}
+                </div>
+            `;
+            reviewContainer.appendChild(reviewBox);
+        });
+    }
+</script>
+
+</body>
+</html>
